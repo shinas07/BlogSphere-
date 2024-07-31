@@ -1,110 +1,82 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const Articles = () => {
-  const [articles, setArticles] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const articlesPerPage = 5;
+const WriteArticlePage = () => {
+  const [title, setTitle] = useState('');
+  const [image, setImage] = useState(null);
+  const [content, setContent] = useState('');
+  const [preview, setPreview] = useState('');
 
-  useEffect(() => {
-    // Fetch articles and categories (replace with your API endpoints)
-    async function fetchData() {
-      const articlesResponse = await fetch('/api/articles');
-      const categoriesResponse = await fetch('/api/categories');
-      const articlesData = await articlesResponse.json();
-      const categoriesData = await categoriesResponse.json();
-      setArticles(articlesData);
-      setCategories(categoriesData);
-    }
-    fetchData();
-  }, []);
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setImage(file);
+    setPreview(URL.createObjectURL(file));
+  };
 
-  const filteredArticles = articles
-    .filter(article => selectedCategory === 'All' || article.category === selectedCategory)
-    .filter(article => article.title.toLowerCase().includes(searchTerm.toLowerCase()));
-
-  const indexOfLastArticle = currentPage * articlesPerPage;
-  const indexOfFirstArticle = indexOfLastArticle - articlesPerPage;
-  const currentArticles = filteredArticles.slice(indexOfFirstArticle, indexOfLastArticle);
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Add your submit logic here
+  };
 
   return (
-    <div className="font-sans min-h-screen bg-[#111113] text-gray-200">
-      <nav className="bg-[#111113] p-4 shadow-lg">
-        <div className="container mx-auto flex justify-between items-center">
-          <div className="text-white text-2xl font-bold">MyBlog</div>
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 flex items-center justify-center py-10">
+      <div className="w-full max-w-2xl bg-gray-900 p-8 rounded-lg shadow-2xl shadow-gray-800">
+        <h1 className="text-3xl font-bold text-white mb-6 text-center">Write a New Article</h1>
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <a href="/" className="text-gray-300 mx-2">Home</a>
-            <a href="#articles" className="text-gray-300 mx-2">Articles</a>
-            <a href="#signup" className="text-gray-300 mx-2">Sign Up</a>
-          </div>
-        </div>
-      </nav>
-      <header className="bg-[#111113] text-white py-20">
-        <div className="container mx-auto text-center">
-          <h1 className="text-5xl font-bold">Articles</h1>
-          <p className="mt-4 text-xl">Explore our latest articles and insights.</p>
-        </div>
-      </header>
-      <section id="filter" className="py-10 bg-[#111113]">
-        <div className="container mx-auto flex flex-col md:flex-row items-center justify-between">
-          <div className="w-full md:w-1/3 mb-4 md:mb-0">
+            <label htmlFor="title" className="block text-lg font-semibold text-gray-300 mb-2">Title</label>
             <input
               type="text"
-              placeholder="Search articles..."
-              className="w-full p-3 bg-gray-900 text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full p-4 border border-gray-700 rounded-md bg-gray-800 text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 transition duration-300"
+              required
             />
           </div>
-          <div className="w-full md:w-1/3">
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full p-3 bg-gray-900 text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
-            >
-              <option value="All">All Categories</option>
-              {categories.map((category, index) => (
-                <option key={index} value={category.name}>{category.name}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </section>
-      <section id="articles-list" className="py-20 bg-[#111113]">
-        <div className="container mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {currentArticles.map((article) => (
-              <div key={article.id} className="p-6 bg-gray-800 rounded-lg shadow-lg hover:bg-gray-700 transition ease-in-out duration-300">
-                <h3 className="text-2xl font-bold mb-4 text-white">{article.title}</h3>
-                <p className="text-gray-400 mb-4">{article.summary}</p>
-                <a href={`/articles/${article.id}`} className="text-blue-400 hover:underline">Read More</a>
+          <div>
+            <label htmlFor="image" className="block text-lg font-semibold text-gray-300 mb-2">Upload Image</label>
+            <div className="relative w-full border border-gray-700 bg-gray-800 p-4 rounded-md cursor-pointer hover:bg-gray-700 transition duration-300">
+              <input
+                type="file"
+                id="image"
+                onChange={handleImageChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                required
+              />
+              <div className="text-center text-gray-400">
+                {preview ? (
+                  <img src={preview} alt="Preview" className="w-full h-40 object-cover rounded-md" />
+                ) : (
+                  <p className="text-lg">Drag & drop an image here, or click to select</p>
+                )}
               </div>
-            ))}
+            </div>
           </div>
-          <div className="flex justify-center mt-8">
-            <nav>
-              <ul className="flex space-x-2">
-                {[...Array(Math.ceil(filteredArticles.length / articlesPerPage)).keys()].map((number) => (
-                  <li key={number}>
-                    <button
-                      onClick={() => paginate(number + 1)}
-                      className={`px-4 py-2 rounded-full ${currentPage === number + 1 ? 'bg-gray-300 text-[#111113]' : 'bg-gray-600 text-gray-200'} hover:bg-gray-500`}
-                    >
-                      {number + 1}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </nav>
+          <div>
+            <label htmlFor="content" className="block text-lg font-semibold text-gray-300 mb-2">Content</label>
+            <ReactQuill
+              id="content"
+              value={content}
+              onChange={setContent}
+              className="border border-gray-700 rounded-md bg-gray-800 text-gray-200 h-80"  // Increased height
+              theme="snow"
+            />
           </div>
-        </div>
-      </section>
+          <button
+            type="submit"
+            className="w-full py-3 bg-gradient-to-r from-gray-800 to-gray-700 text-white rounded-lg font-bold shadow-lg shadow-gray-800 hover:from-gray-700 hover:to-gray-600 transition-all duration-300 ease-in-out transform hover:scale-105"
+          >
+            Submit Article
+          </button>
+        </form>
+        <ToastContainer />
+      </div>
     </div>
   );
 };
 
-export default Articles;
+export default WriteArticlePage;
