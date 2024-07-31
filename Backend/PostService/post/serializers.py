@@ -1,8 +1,8 @@
 # card/serializers.py
 from rest_framework import serializers
-from .models import CustomCard
+from .models import Post
 
 class CustomCardSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CustomCard
-        fields = ['id', 'card_type', 'card_name', 'description', 'details']
+        model = Post
+        fields = '__all__'
