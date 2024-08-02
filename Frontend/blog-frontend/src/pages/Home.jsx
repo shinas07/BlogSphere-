@@ -17,7 +17,7 @@ const Home = () => {
     <div className="font-sans min-h-screen bg-[#111113] text-gray-200">
       
       <nav className="bg-[#111113] p-4 shadow-lg">
-        <div className="container mx-auto flex justify-between items-center">
+        <div className="container mx-auto flex justify-between  space-x-6">
           <div className="text-white text-2xl font-bold">MyBlog</div>
           <div>
             <a href="#home" className="text-gray-300 mx-2">Home</a>
