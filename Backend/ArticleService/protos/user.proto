@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+service BlogService {
+  rpc CreateArticle (ArticleRequest) returns (ArticleResponse);
+}
+
+message ArticleRequest {
+  string title = 1;
+  string content = 2;
+  bytes image = 3;
+  string user_id = 4;
+}
+
+message ArticleResponse {
+  string article_id = 1;
+  string title = 2;
+}
