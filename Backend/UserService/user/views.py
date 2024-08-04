@@ -7,6 +7,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from django.contrib.auth.models import User
+from django.http import JsonResponse
+from rest_framework.decorators import api_view, permission_classes
+import jwt
+
+
+
 
 class TokenRefreshView(generics.GenericAPIView):
     permission_classes = (AllowAny,)
@@ -38,7 +45,7 @@ class LoginView(views.APIView):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             username = serializer.validated_data['username']
-            password = serializer.validated_data['password']  
+            password = serializer.validated_data['password']  # Corrected line
 
             user = authenticate(request, username=username, password=password)
             print(user)
@@ -50,5 +57,48 @@ class LoginView(views.APIView):
                 }, status=status.HTTP_200_OK)
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_jwt(request):
+    token = request.data.get('jwt_token')
+    # print(f'Token received: {token}')
+    if not token:
+        return JsonResponse({'error': 'JWT token is missing'}, status=400)
+    
+    
+    try:
+        payload = jwt.decode(token, 'django-insecure-$roc7qpoa5ybcp!ru&w4=xaib+@#nflrvkr+4tzb_@cn49#icn', algorithms=['HS256'])
+        user_queryset  = User.objects.filter(id=payload['user_id'])
+        if user_queryset.exists():
+            user = user_queryset.first()
+            user_data = {
+                'id' : user.id,
+                'username' : user.username,
+                'email' : user.email,
+            }
+        # print(user_data)
+        # print(f'Paylo   ad: {payload}')
+        return JsonResponse({
+                'token_payload': payload,
+                'user': user_data
+            })
+    
+    except jwt.ExpiredSignatureError:
+        # print('Token has expired')
+        return JsonResponse({"error": "Token has expired"}, status=403)
+    except jwt.InvalidTokenError as e:
+        # print(f'Invalid token error: {str(e)}')
+        return JsonResponse({"error": "Invalid token"}, status=403)
+    except Exception as e:
+        # print(f'Unexpected error decoding JWT: {str(e)}')
+        return JsonResponse({"error": "An unexpected error occurred"}, status=500)
+
+
 
 
