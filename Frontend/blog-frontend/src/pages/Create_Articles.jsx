@@ -11,6 +11,7 @@ const WriteArticlePage = () => {
   const [image, setImage] = useState(null);
   const [content, setContent] = useState('');
   const [preview, setPreview] = useState('');
+  console.log(content)
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -19,16 +20,29 @@ const WriteArticlePage = () => {
     console.log('datas adding correctly')
   };
 
+
+  function stripHtmlTags(htmlString) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+    return doc.body.textContent || "";
+  }
+  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const formData = new FormData();
     formData.append('title', title)
-    formData.append('content', content)
+
+     // Strip HTML tags from content before appending
+    const plainTextContent = stripHtmlTags(content);
+    formData.append('content', plainTextContent);
+    console.log(plainTextContent)
+
+
     if (image) formData.append('image', image)
 
     const accessToken = Cookies.get('access_token')
-    console.log(accessToken)
 
       try {
         const response = await axios.post('http://127.0.0.1:8001/api/create/', formData, {  
