@@ -1,66 +1,59 @@
-from rest_framework import viewsets
-from .models import Article
-from .serializers import ArticleSerializer
-from rest_framework  import status  
-from rest_framework.views  import APIView  
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from .grpc_client import verify_jwt_token
-# Create your views here.
-
-
-# class ArticleCreateView(APIView):
-#     permission_class = [IsAuthenticated]
-#     def post(self, request, *args, **kwargs):
-#         serializer = ArticleSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# class ArticleCreateView(APIView):
-#     permission_classes = [IsAuthenticated]
-    
-#     def post(self, request, *args, **kwargs):
-#         token = request.headers.get('Authorization', '').replace('Bearer ', '')
-#         is_valid, user_id = verify_jwt_token(token)
-        
-#         if not is_valid:
-#             return Response({'error': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
-
-#         # Proceed with creating the article
-#         serializer = ArticleSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
+from rest_framework import status, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-import grpc
-import blog_service_pb2
-import blog_service_pb2_grpc
+from rest_framework.exceptions import AuthenticationFailed
+import requests
+import jwt
+from .serializers import ArticleSerializer
+from .authentication import JWTAuthentication
+from .models import Article
+from .serializers import ArticleSerializer
+
 
 class ArticleCreateView(APIView):
-    permission_classes = [IsAuthenticated]
-
+    authentication_classes = [JWTAuthentication]
     def post(self, request, *args, **kwargs):
-        # Assuming you have JWT token in the request headers
-        jwt_token = request.headers.get('Authorization').split(' ')[1]
+        # Extract the token from the Authorization header
+        auth_header = request.headers.get('Authorization')
+
+        if not auth_header:
+            return Response({"error": "Authorization header missing"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+
         try:
-            # Connect to gRPC User Server
-            channel = grpc.insecure_channel('localhost:50051')
-            stub = blog_service_pb2_grpc.UserServiceStub(channel)
-            user_request = blog_service_pb2.UserRequest(user_id=request.user.id)
-            user_response = stub.GetUser(user_request)
-            # Proceed with saving the article
-            serializer = ArticleSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except grpc.RpcError as e:
-            return Response({'error': 'Authentication failed'}, status=status.HTTP_401_UNAUTHORIZED)
+            token = auth_header.split(' ')[1]
+        except IndexError:
+            return Response({"error": "Invalid token format"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        _, user_details = JWTAuthentication().authenticate(request)
+
+        serializer_data = {
+            'title': request.data.get('title'),
+            'content': request.data.get('content'),
+            'image': request.data.get('image'),
+            'author_username': user_details['user']['username'],
+            'author_email': user_details['user']['email']
+        }
+        
+
+        serializer = ArticleSerializer(data=serializer_data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        print(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ArticleListView(generics.ListAPIView):
+    queryset = Article.objects.all()
+    serializer_class = ArticleSerializer
+
+class ArticleDetailedView(APIView):
+    def get(self, request, id):
+        try:
+            article = Article.objects.get(pk=id)
+            serializer = ArticleSerializer(article)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Article.DoesNotExist:
+            return Response({"error": "Article not found"}, status=status.HTTP_404_NOT_FOUND)
+
+

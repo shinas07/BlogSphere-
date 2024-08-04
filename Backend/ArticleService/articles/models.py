@@ -7,6 +7,8 @@ class Article(models.Model):
     content = models.TextField()
     image = models.ImageField(upload_to='images/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    author_username = models.CharField(max_length=100,blank=True,null=True)
+    author_email = models.EmailField(max_length=100,blank=True, null=True)
 
     def __srt__(self):
         return self.title
