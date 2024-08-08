@@ -21,6 +21,7 @@ class JWTAuthentication(BaseAuthentication):
             print('there is no user detail')
             raise AuthenticationFailed(_('Invalid token or user not found'))
         
+
         return (token, user_details)
     
     def verify_token_with_user_service(self, token):
