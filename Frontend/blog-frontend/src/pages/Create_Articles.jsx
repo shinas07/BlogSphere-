@@ -50,7 +50,8 @@ const WriteArticlePage = () => {
             'Content-Type': 'multipart/form-data',  // Set content type
             'Authorization': `Bearer ${accessToken}`, 
           },
-        });
+        }); 
+        
         if (response.status === 201){
           toast.success('Article submitted successfully')
           setContent('')
