@@ -7,13 +7,14 @@ const Home = () => {
   const location = useLocation();
   const isLoggedIn = location.state?.loginSuccess || false;
   const [articles, setArticles] = useState(([]))
+  console.log(isLoggedIn);
 
-
+ 
   const fetchArticles  = async () => {
     try{
       const responce = await axios.get('http://127.0.0.1:8001/api/articles/');
       setArticles(responce.data);
-      console.log(responce.data);
+
     }catch(error){
       toast.error('Error fetching articles:',error)
     }
@@ -22,7 +23,6 @@ const Home = () => {
   useEffect(() => {
     fetchArticles();
   },[]);
-
 
   useEffect(() => {
     if (location.state?.loginSuccess) {

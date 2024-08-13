@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation , useNavigate} from 'react-router-dom';
 import { FaUser, FaLock, FaEnvelope } from 'react-icons/fa';
 import 'react-toastify/dist/ReactToastify.css';
@@ -16,7 +16,12 @@ const Login = () => {
     e.preventDefault();
   
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/login/', {
+      // const response = await axios.post('http://127.0.0.1:8000/api/login/', {
+      //   username,
+      //   password,
+      // });
+
+      const response = await axios.post('http://127.0.0.1:8002/api/user/login/', {
         username,
         password,
       });
