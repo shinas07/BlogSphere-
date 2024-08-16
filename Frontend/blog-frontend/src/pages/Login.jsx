@@ -11,6 +11,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [status,setStatus] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,11 +28,12 @@ const Login = () => {
       });
   
       if (response.status === 200) {
-
+        localStorage.setItem('isLoggedIn', 'true');
         const { access, refresh } = response.data;
         Cookies.set('access_token', access, {expires:1});
         Cookies.set('refresh_token', refresh, { expires:7})
-        navigate('/', { state: { loginSuccess: true } });
+        setStatus(true)
+        navigate('/', { state: { status: true } });
       }
     } catch (error) {
       if (error.response) {

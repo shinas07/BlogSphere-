@@ -28,7 +28,7 @@ const Signup = () => {
       });
       console.log(response.data);
       // setMessage('Registration successful')
-      toast.success('Registration successful!');
+      // toast.success('Registration successful!');
       navigate('/login', { state: { registrationSuccess: true } });
     }catch(error){
       console.error('Error registering user:', error)

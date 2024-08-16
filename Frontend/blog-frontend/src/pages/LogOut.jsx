@@ -9,8 +9,7 @@ const LogOut = () => {
         // Remove cookies on logout
         Cookies.remove('access_token');
         Cookies.remove('refresh_token');
-
-        // Redirect to home page or login page
+        localStorage.removeItem('isLoggedIn')
         navigate('/');
     }, [navigate]);
 

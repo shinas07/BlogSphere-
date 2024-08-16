@@ -32,3 +32,5 @@ class JWTAuthentication(BaseAuthentication):
             print("Data Receivd:", response.json())
             return response.json()
         return None
+
+    
