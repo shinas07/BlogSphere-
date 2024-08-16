@@ -11,8 +11,6 @@ BlogSphere is a blog management application using a microservices architecture w
 - **Frontend**
   - **React App**: Provides the user interface for interacting with the Post and User Services.
 
-- **Docker**
-  - Dockerfiles for building images for the backend services and frontend.
 
 ## Features
 
